@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
+import API_BASE_URL from "../config/api";
 
 export default function DonationModal({ campaign, onClose, onSuccess }) {
   const { currentUser } = useAuth();
@@ -55,7 +56,7 @@ export default function DonationModal({ campaign, onClose, onSuccess }) {
         headers["Authorization"] = `Bearer ${currentUser.token}`;
       }
 
-      const orderResponse = await fetch("http://localhost:8080/api/donations/order", {
+      const orderResponse = await fetch(`${API_BASE_URL}/api/donations/order`, {
         method: "POST",
         headers,
         body: JSON.stringify({
@@ -95,7 +96,7 @@ export default function DonationModal({ campaign, onClose, onSuccess }) {
             setLoading(true);
             try {
               // 3. Verify Payment Signature on Backend
-              const verifyResponse = await fetch("http://localhost:8080/api/donations/verify", {
+              const verifyResponse = await fetch(`${API_BASE_URL}/api/donations/verify`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -172,7 +173,7 @@ export default function DonationModal({ campaign, onClose, onSuccess }) {
             </p>
             <div style={{ display: "flex", gap: "12px", justifyContent: "center" }}>
               <a 
-                href={`http://localhost:8080/api/donations/${paymentSuccess.id}/receipt`}
+                href={`${API_BASE_URL}/api/donations/${paymentSuccess.id}/receipt`}
                 className="btn btn-success"
                 style={{ padding: "10px 20px" }}
               >

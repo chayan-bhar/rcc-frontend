@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import API_BASE_URL from "../config/api";
 
 export default function AdminDashboard() {
   const { currentUser } = useAuth();
@@ -29,7 +30,7 @@ export default function AdminDashboard() {
       setError("");
 
       // Fetch stats
-      const statsRes = await fetch("http://localhost:8080/api/admin/stats", {
+      const statsRes = await fetch(`${API_BASE_URL}/api/admin/stats`, {
         headers: { "Authorization": `Bearer ${currentUser.token}` }
       });
       if (statsRes.ok) {
@@ -40,7 +41,7 @@ export default function AdminDashboard() {
       }
 
       // Fetch campaigns
-      const campRes = await fetch("http://localhost:8080/api/campaigns");
+      const campRes = await fetch(`${API_BASE_URL}/api/campaigns`);
       if (campRes.ok) {
         const campData = await campRes.json();
         setCampaigns(campData);
@@ -82,7 +83,7 @@ export default function AdminDashboard() {
     if (!window.confirm("Are you sure you want to delete this campaign?")) return;
 
     try {
-      const response = await fetch(`http://localhost:8080/api/campaigns/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/campaigns/${id}`, {
         method: "DELETE",
         headers: {
           "Authorization": `Bearer ${currentUser.token}`
@@ -105,8 +106,8 @@ export default function AdminDashboard() {
     setFormLoading(true);
 
     const url = isEditing
-      ? `http://localhost:8080/api/campaigns/${formCampaign.id}`
-      : "http://localhost:8080/api/campaigns";
+      ? `${API_BASE_URL}/api/campaigns/${formCampaign.id}`
+      : `${API_BASE_URL}/api/campaigns`;
 
     const method = isEditing ? "PUT" : "POST";
 
