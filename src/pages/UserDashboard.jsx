@@ -28,8 +28,17 @@ export default function UserDashboard() {
         });
         if (profRes.ok) {
           const profData = await profRes.json();
-          setProfile(profData);
-          setName(profData.name || "");
+          // Always use Auth0 identity — email/name from backend may be stale or incorrect
+          setProfile({
+            ...profData,
+            email: currentUser.email,
+            name: currentUser.name,
+          });
+          setName(currentUser.name || "");
+        } else {
+          // Backend unavailable — use Auth0 identity directly
+          setProfile({ email: currentUser.email, name: currentUser.name });
+          setName(currentUser.name || "");
         }
 
         // Fetch donations
@@ -129,7 +138,7 @@ export default function UserDashboard() {
           <form onSubmit={handleProfileUpdate}>
             <div className="form-group">
               <label className="form-label">Email Address</label>
-              <input type="text" className="form-input" disabled value={profile?.email || ""} style={{ opacity: 0.6, cursor: "not-allowed" }} />
+              <input type="text" className="form-input" disabled value={profile?.email || currentUser?.email || ""} style={{ opacity: 0.6, cursor: "not-allowed" }} />
             </div>
             <div className="form-group">
               <label className="form-label">Display Name</label>

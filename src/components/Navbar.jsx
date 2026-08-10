@@ -72,7 +72,7 @@ export default function Navbar() {
             <div style={{ textAlign: "right" }}>
               <div style={{ fontSize: "0.85rem", fontWeight: "600" }}>{currentUser.name}</div>
               <div style={{ fontSize: "0.7rem", color: "var(--text-secondary)" }}>
-                {currentUser.role === "ADMIN" ? "Administrator" : "Donor"}
+                {currentUser.email}
               </div>
             </div>
             <button onClick={handleLogout} className="btn btn-secondary" style={{ padding: "8px 16px", fontSize: "0.85rem" }}>
