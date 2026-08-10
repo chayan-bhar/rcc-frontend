@@ -3,6 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import CampaignCard from "../components/CampaignCard";
 import DonationModal from "../components/DonationModal";
 import { useNavigate } from "react-router-dom";
+import API_BASE_URL from "../config/api";
 
 export default function Home() {
   const { currentUser } = useAuth();
@@ -16,7 +17,7 @@ export default function Home() {
   const fetchCampaigns = async () => {
     try {
       setLoading(true);
-      const response = await fetch("http://localhost:8080/api/campaigns");
+      const response = await fetch(`${API_BASE_URL}/api/campaigns`);
       if (!response.ok) throw new Error("Failed to load campaigns.");
       const data = await response.json();
       setCampaigns(data);
@@ -45,7 +46,7 @@ export default function Home() {
     if (!window.confirm("Are you sure you want to delete this campaign?")) return;
 
     try {
-      const response = await fetch(`http://localhost:8080/api/campaigns/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/campaigns/${id}`, {
         method: "DELETE",
         headers: {
           "Authorization": `Bearer ${currentUser.token}`

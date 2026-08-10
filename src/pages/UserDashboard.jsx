@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import API_BASE_URL from "../config/api";
 
 export default function UserDashboard() {
   const { currentUser } = useAuth();
@@ -23,7 +24,7 @@ export default function UserDashboard() {
       try {
         setLoading(true);
         // Fetch profile
-        const profRes = await fetch("http://localhost:8080/api/users/profile", {
+        const profRes = await fetch(`${API_BASE_URL}/api/users/profile`, {
           headers: { "Authorization": `Bearer ${currentUser.token}` }
         });
         if (profRes.ok) {
@@ -42,7 +43,7 @@ export default function UserDashboard() {
         }
 
         // Fetch donations
-        const donRes = await fetch("http://localhost:8080/api/donations/my-donations", {
+        const donRes = await fetch(`${API_BASE_URL}/api/donations/my-donations`, {
           headers: { "Authorization": `Bearer ${currentUser.token}` }
         });
         if (donRes.ok) {
@@ -66,7 +67,7 @@ export default function UserDashboard() {
     setUpdating(true);
 
     try {
-      const response = await fetch("http://localhost:8080/api/users/profile", {
+      const response = await fetch(`${API_BASE_URL}/api/users/profile`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -213,7 +214,7 @@ export default function UserDashboard() {
                   <td style={tdStyle}>
                     {d.status === "SUCCESS" ? (
                       <a 
-                        href={`http://localhost:8080/api/donations/${d.id}/receipt`}
+                        href={`${API_BASE_URL}/api/donations/${d.id}/receipt`}
                         className="btn btn-success"
                         style={{ padding: "6px 12px", fontSize: "0.8rem", textDecoration: "none" }}
                       >
