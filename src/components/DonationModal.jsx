@@ -113,6 +113,8 @@ export default function DonationModal({ campaign, onClose, onSuccess }) {
               const finalDonation = await verifyResponse.json();
               setPaymentSuccess(finalDonation);
               setLoading(false);
+              // Notify any listeners (e.g. UserDashboard) to refresh their data
+              window.dispatchEvent(new CustomEvent("donation:success", { detail: finalDonation }));
               if (onSuccess) onSuccess();
             } catch (err) {
               setError("Signature verification failed: " + err.message);
