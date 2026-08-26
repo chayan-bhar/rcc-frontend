@@ -14,52 +14,60 @@ export default function UserDashboard() {
   const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState({ text: "", type: "" });
 
+  const fetchData = async () => {
+    if (!currentUser) return;
+    try {
+      setLoading(true);
+      // Fetch profile
+      const profRes = await fetch(`${API_BASE_URL}/api/users/profile`, {
+        headers: { "Authorization": `Bearer ${currentUser.token}` }
+      });
+      if (profRes.ok) {
+        const profData = await profRes.json();
+        // Always use Auth0 identity — email/name from backend may be stale or incorrect
+        setProfile({
+          ...profData,
+          email: currentUser.email,
+          name: currentUser.name,
+        });
+        setName(currentUser.name || "");
+      } else {
+        // Backend unavailable — use Auth0 identity directly
+        setProfile({ email: currentUser.email, name: currentUser.name });
+        setName(currentUser.name || "");
+      }
+
+      // Fetch donations — send email as query param (backend has no JWT filter)
+      const donRes = await fetch(
+        `${API_BASE_URL}/api/donations/my-donations?email=${encodeURIComponent(currentUser.email)}`,
+        { headers: { "Authorization": `Bearer ${currentUser.token}` } }
+      );
+      if (donRes.ok) {
+        const donData = await donRes.json();
+        setDonations(donData);
+      }
+    } catch (err) {
+      console.error("Dashboard load error:", err);
+      setMsg({ text: "Could not synchronize dashboard with backend service.", type: "error" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (!currentUser) {
       navigate("/login");
       return;
     }
-
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        // Fetch profile
-        const profRes = await fetch(`${API_BASE_URL}/api/users/profile`, {
-          headers: { "Authorization": `Bearer ${currentUser.token}` }
-        });
-        if (profRes.ok) {
-          const profData = await profRes.json();
-          // Always use Auth0 identity — email/name from backend may be stale or incorrect
-          setProfile({
-            ...profData,
-            email: currentUser.email,
-            name: currentUser.name,
-          });
-          setName(currentUser.name || "");
-        } else {
-          // Backend unavailable — use Auth0 identity directly
-          setProfile({ email: currentUser.email, name: currentUser.name });
-          setName(currentUser.name || "");
-        }
-
-        // Fetch donations
-        const donRes = await fetch(`${API_BASE_URL}/api/donations/my-donations`, {
-          headers: { "Authorization": `Bearer ${currentUser.token}` }
-        });
-        if (donRes.ok) {
-          const donData = await donRes.json();
-          setDonations(donData);
-        }
-      } catch (err) {
-        console.error("Dashboard load error:", err);
-        setMsg({ text: "Could not synchronize dashboard with backend service.", type: "error" });
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchData();
   }, [currentUser, navigate]);
+
+  // Re-fetch whenever a donation is completed (even from Home page modal)
+  useEffect(() => {
+    const handleDonationSuccess = () => fetchData();
+    window.addEventListener("donation:success", handleDonationSuccess);
+    return () => window.removeEventListener("donation:success", handleDonationSuccess);
+  }, [currentUser]);
 
   const handleProfileUpdate = async (e) => {
     e.preventDefault();

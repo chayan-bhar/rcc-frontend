@@ -2,8 +2,16 @@ import React from "react";
 import { useAuth } from "../context/AuthContext";
 
 export default function CampaignCard({ campaign, onDonate, onEdit, onDelete }) {
-  const { currentUser } = useAuth();
+  const { currentUser, login } = useAuth();
   const isAdmin = currentUser && currentUser.role === "ADMIN";
+
+  const handleDonate = () => {
+    if (!currentUser) {
+      login(); // redirect to Auth0 login, then return to current page
+      return;
+    }
+    onDonate(campaign);
+  };
 
   const target = campaign.targetAmount || 0;
   const raised = campaign.raisedAmount || 0;
@@ -101,11 +109,11 @@ export default function CampaignCard({ campaign, onDonate, onEdit, onDelete }) {
 
         {/* Action Button */}
         <button 
-          onClick={() => onDonate(campaign)} 
+          onClick={handleDonate} 
           className="btn btn-primary" 
           style={{ width: "100%" }}
         >
-          Donate Now
+          {currentUser ? "Donate Now" : "Login to Donate"}
         </button>
       </div>
     </div>
