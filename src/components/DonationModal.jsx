@@ -85,7 +85,7 @@ export default function DonationModal({ campaign, onClose, onSuccess }) {
       }
 
         const options = {
-          key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+          key: orderData.keyId || import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_test_TUUsfaDt6yF6FZ",
           amount: orderData.amount * 100, // paise
           currency: orderData.currency,
           name: "Hope & Care",
