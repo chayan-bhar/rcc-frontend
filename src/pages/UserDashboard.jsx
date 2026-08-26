@@ -37,10 +37,11 @@ export default function UserDashboard() {
         setName(currentUser.name || "");
       }
 
-      // Fetch donations
-      const donRes = await fetch(`${API_BASE_URL}/api/donations/my-donations`, {
-        headers: { "Authorization": `Bearer ${currentUser.token}` }
-      });
+      // Fetch donations — send email as query param (backend has no JWT filter)
+      const donRes = await fetch(
+        `${API_BASE_URL}/api/donations/my-donations?email=${encodeURIComponent(currentUser.email)}`,
+        { headers: { "Authorization": `Bearer ${currentUser.token}` } }
+      );
       if (donRes.ok) {
         const donData = await donRes.json();
         setDonations(donData);
