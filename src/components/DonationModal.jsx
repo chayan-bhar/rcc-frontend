@@ -85,7 +85,7 @@ export default function DonationModal({ campaign, onClose, onSuccess }) {
       }
 
         const options = {
-          key: "rzp_test_placeholder_key", // Will be overwritten by backend or system config
+          key: import.meta.env.VITE_RAZORPAY_KEY_ID,
           amount: orderData.amount * 100, // paise
           currency: orderData.currency,
           name: "Hope & Care",
@@ -134,6 +134,15 @@ export default function DonationModal({ campaign, onClose, onSuccess }) {
         };
 
         const rzp = new window.Razorpay(options);
+
+        rzp.on("payment.failed", function (response) {
+          setError(
+            `Payment failed: ${response.error.description || "Unknown error"}. ` +
+            `Reason: ${response.error.reason || ""}`
+          );
+          setLoading(false);
+        });
+
         rzp.open();
 
     } catch (err) {
