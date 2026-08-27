@@ -15,12 +15,12 @@ export function AuthProvider({ children }) {
     loginWithRedirect,
     logout: auth0Logout,
     getAccessTokenSilently,
+    getIdTokenClaims,
   } = useAuth0();
 
   const [currentUser, setCurrentUser] = useState(null);
   const [token, setToken] = useState(null);
 
-  // Build currentUser directly from Auth0 user object — no backend call for identity
   useEffect(() => {
     if (isLoading) return;
 
@@ -30,32 +30,36 @@ export function AuthProvider({ children }) {
       return;
     }
 
-    // Attempt to get an access token (used for authenticated backend API calls)
-    getAccessTokenSilently()
-      .then((t) => {
-        setToken(t);
-        setCurrentUser({
-          uid: auth0User.sub,
-          email: auth0User.email,
-          name: auth0User.name || auth0User.nickname || auth0User.email,
-          picture: auth0User.picture,
-          // Role is resolved by the backend using the token; default to USER here
-          role: "USER",
-          token: t,
-        });
-      })
-      .catch(() => {
-        // No API audience configured — still set user without a bearer token
-        setCurrentUser({
-          uid: auth0User.sub,
-          email: auth0User.email,
-          name: auth0User.name || auth0User.nickname || auth0User.email,
-          picture: auth0User.picture,
-          role: "USER",
-          token: null,
-        });
+    const fetchToken = async () => {
+      try {
+        const claims = await getIdTokenClaims();
+        if (claims && claims.__raw) {
+          return claims.__raw;
+        }
+      } catch (e) {
+        console.warn("getIdTokenClaims error:", e);
+      }
+
+      try {
+        return await getAccessTokenSilently();
+      } catch (e) {
+        console.warn("getAccessTokenSilently error:", e);
+        return null;
+      }
+    };
+
+    fetchToken().then((t) => {
+      setToken(t);
+      setCurrentUser({
+        uid: auth0User.sub,
+        email: auth0User.email,
+        name: auth0User.name || auth0User.nickname || auth0User.email,
+        picture: auth0User.picture,
+        role: "USER",
+        token: t,
       });
-  }, [isLoading, isAuthenticated, auth0User]);
+    });
+  }, [isLoading, isAuthenticated, auth0User, getIdTokenClaims, getAccessTokenSilently]);
 
   /** Redirects to Auth0 Universal Login */
   const login = () => loginWithRedirect();
