@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import API_BASE_URL from "../config/api";
 
 export default function UserDashboard() {
-  const { currentUser } = useAuth();
+  const { currentUser, updateUserProfile } = useAuth();
   const navigate = useNavigate();
 
   const [donations, setDonations] = useState([]);
@@ -18,26 +18,21 @@ export default function UserDashboard() {
     if (!currentUser) return;
     try {
       setLoading(true);
-      // Fetch profile
+      // Fetch profile from backend
       const profRes = await fetch(`${API_BASE_URL}/api/users/profile`, {
         headers: { "Authorization": `Bearer ${currentUser.token}` }
       });
       if (profRes.ok) {
         const profData = await profRes.json();
-        // Always use Auth0 identity — email/name from backend may be stale or incorrect
-        setProfile({
-          ...profData,
-          email: currentUser.email,
-          name: currentUser.name,
-        });
-        setName(currentUser.name || "");
+        setProfile(profData);
+        setName(profData.name || currentUser.name || "");
       } else {
-        // Backend unavailable — use Auth0 identity directly
+        // Backend unavailable — fallback to Auth0 identity
         setProfile({ email: currentUser.email, name: currentUser.name });
         setName(currentUser.name || "");
       }
 
-      // Fetch donations — send email as query param (backend has no JWT filter)
+      // Fetch donations — send email as query param
       const donRes = await fetch(
         `${API_BASE_URL}/api/donations/my-donations?email=${encodeURIComponent(currentUser.email)}`,
         { headers: { "Authorization": `Bearer ${currentUser.token}` } }
@@ -87,6 +82,10 @@ export default function UserDashboard() {
       if (response.ok) {
         const updated = await response.json();
         setProfile(updated);
+        setName(updated.name || "");
+        if (updateUserProfile) {
+          updateUserProfile({ name: updated.name });
+        }
         setMsg({ text: "Profile details updated successfully.", type: "success" });
       } else {
         throw new Error("Update rejected.");

@@ -61,6 +61,11 @@ export function AuthProvider({ children }) {
     });
   }, [isLoading, isAuthenticated, auth0User, getIdTokenClaims, getAccessTokenSilently]);
 
+  /** Updates local currentUser profile state */
+  const updateUserProfile = (updatedData) => {
+    setCurrentUser((prev) => (prev ? { ...prev, ...updatedData } : prev));
+  };
+
   /** Redirects to Auth0 Universal Login */
   const login = () => loginWithRedirect();
 
@@ -79,6 +84,7 @@ export function AuthProvider({ children }) {
     login,
     signup,
     logout,
+    updateUserProfile,
   };
 
   return (
